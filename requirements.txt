@@ -1,1 +1,1 @@
-selenium
+git+https://github.com/flyingrub/scdl

@@ -1,30 +1,39 @@
-from selenium import webdriver
-import time
+import subprocess
 
-# https://stackoverflow.com/a/27760083
-def scroll_all_the_way_down(driver):
-    SCROLL_PAUSE_TIME = 0.5
-    last_height = driver.execute_script("return document.body.scrollHeight")
+from dataclasses import dataclass
 
-    while True:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(SCROLL_PAUSE_TIME)
+from scdl import client
+from scdl import scdl
 
-        new_height = driver.execute_script("return document.body.scrollHeight")
-        if new_height == last_height:
-            break
-        last_height = new_height
+@dataclass
+class Config:
+    username: str
+    path: str = None
 
-def fetch_likes_list(username):
-    driver = webdriver.Firefox()
-    driver.get("https://soundcloud.com/" + username + "/likes")
+class FavsLister:
+    def __init__(self, config):
+        user_link = "https://soundcloud.com/" + config.username
+        self.user = scdl.get_item(user_link)
 
-    scroll_all_the_way_down(driver)
+    def list_urls(self):
+        dl_url = scdl.url["favorites"].format(self.user["id"])
+        resources = scdl.client.get_collection(dl_url, None)
+        return [resource["track"]["permalink_url"] for resource in resources]
 
-    title_elements = driver.find_elements_by_class_name('soundTitle__title')
-    links = [title.get_attribute("href") for title in title_elements]
+class Downloader:
+    def __init__(self, config):
+        self.path = config.path
 
-    driver.close()
-    return links
+    def download(self, link):
+        command = ["scdl", "--onlymp3", "-l", link]
+        if self.path:
+            subprocess.call(command, cwd=self.path)
+        else:
+            subprocess.call(command)
 
-print(fetch_likes_list("djmcmostowiak"))
+config = Config("djmcmostowiak", "hej/")
+
+lister = FavsLister(config)
+downloader = Downloader(config)
+
+downloader.download(lister.list_urls()[0])
