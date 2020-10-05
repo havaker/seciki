@@ -9,5 +9,5 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # run
-python bot.py
+python seciki.py
 ```

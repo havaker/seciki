@@ -1,5 +1,6 @@
-import subprocess
+import argparse
 import os
+import subprocess
 
 from dataclasses import dataclass
 from xdg import XDG_DATA_HOME
@@ -12,6 +13,36 @@ class Config:
     username: str
     download_path: str = None
     index_path: str = os.path.join(XDG_DATA_HOME, "seciki/index.txt")
+
+    @classmethod
+    def from_args(cls):
+        parser = argparse.ArgumentParser(description='Download some seciki.')
+        parser.add_argument(
+            "username",
+            metavar="username",
+            type=str,
+            help="soundcloud username"
+        )
+        parser.add_argument(
+            "--download-path",
+            metavar="path",
+            type=str,
+            help="path where songs are saved"
+        )
+        parser.add_argument(
+            "--index-path",
+            metavar="path",
+            type=str,
+            help="path where index is saved"
+        )
+        args = parser.parse_args()
+
+        default = cls(args.username)
+        if args.download_path:
+            default.download_path = args.download_path
+        if args.index_path:
+            default.index_path = args.index_path
+        return default
 
 class FavsLister:
     def __init__(self, config):
@@ -52,7 +83,7 @@ class Index:
         with open(self.path, 'a') as f:
             f.write(url + '\n')
 
-config = Config("phem4evr", "hej/")
+config = Config.from_args()
 
 index = Index(config)
 lister = FavsLister(config)
@@ -60,7 +91,6 @@ downloader = Downloader(config)
 
 fav_urls = lister.list_urls()
 saved_urls = index.load()
-
 unsaved_urls = set(fav_urls) - set(saved_urls)
 
 for url in unsaved_urls:
