@@ -1,4 +1,4 @@
-pobierz sb swoje fav z soundcloud, wip jeszcze
+download your favs from soundcloud
 
 ```bash
 # setup virtualenv
@@ -9,5 +9,6 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # run
-python seciki.py
+python seciki.py -h
 ```
+seciki will download each song only once, it maintains list of saved tracks
