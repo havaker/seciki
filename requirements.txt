@@ -1,1 +1,2 @@
+xdg
 git+https://github.com/flyingrub/scdl
